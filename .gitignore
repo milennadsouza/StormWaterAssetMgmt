@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/Stormwater_Analysis
+/Stormwater_Analysis/obj
+/Stormwater_Analysis/bin/Debug/netcoreapp2.1
