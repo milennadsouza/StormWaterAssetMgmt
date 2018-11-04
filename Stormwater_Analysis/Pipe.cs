@@ -47,7 +47,7 @@ namespace Stormwater_Analysis
         public int Depth { get; set; }   //Depth can be anywhere from 1 to 20 
         public TypesOfMaterials Material { get; set; } //Cast Iron, Concrete, HDPE, PVC, Corrugated Metal with Tar Lining, Corrugated Iron, Masonry
         public decimal Slope { get; set; } // 
-        public int Est_Life { get;  private set; }// -Can only be set from within this class scope. Not available to user to set. Cast Iron, Corrugated Metal with Tar Lining, HDPE, PVC, Concrete - 75 years / Masonry, Corrugated Iron - 50 years
+        public int Est_Life { get;   set; }// -Can only be set from within this class scope. Not available to user to set. Cast Iron, Corrugated Metal with Tar Lining, HDPE, PVC, Concrete - 75 years / Masonry, Corrugated Iron - 50 years
         public bool Critical_Infrastructure { get; set; } 
         public bool Critical_Structure { get; set; }
         public DateTime DateOfInstallation { get; } //is set to current date from constructor
@@ -65,151 +65,12 @@ namespace Stormwater_Analysis
         #endregion
         
         #region Methods
-         /// <summary>
-         /// PipeLife is a method to calculate and set the life of a pipe based on the pipe material.
-         /// </summary>
-         /// <param name="mater">provide the type of material from a predefined list of materials</param>
-         /// <returns></returns>
-            public void PipeLife(TypesOfMaterials mater)
-        {
-            var plife = 0;
-            
-            switch (mater.ToString())
-            {
-                case "HDPE":
-                case "PVC":
-                case "Corrugated_Metal_with_Tar_Lining":
-                    plife = 75;
-                    break;
-                case "Cast_Iron":
-                case "Concrete":
-                    plife = 60;
-                    break;
-                                  
-                case "Masonry":
-                    case "Corrugated_Iron":
-                    plife = 50;
-                    break;
-
-                default:
-                    break;
-
-            }
-            Est_Life = plife;
-        }
+         
 
 
-        //method to calculate the COF using Critical_Infrastructure, Critical_Structure
-        public decimal CalculateCOF( )
 
-        {
-            decimal COFValue = 0;
-          
-       
-            COFValue = 0; 
-            return COFValue;
-        }
-            // Pipe Age / Est_Life gives you a EEL - if EEL is closer to 1 then POF Coeff is higher(worse)
-        public decimal CalculatePOF(DateTime InstallationDate, TypesOfMaterials Material, decimal Depth, int Est_Life)
-        {
-            decimal material_coeff = 0;
-            int pipe_age_value = 0;
-            decimal soil_type_value = 0;
-            decimal depth_coeff = 0;
-            decimal POFValue = 0;
-            int pipe_age = 0;
-            int est_life = 0;
-            int pipe_age_coeff = 0;
-           // Array material_arr = Enum.GetNames(typeof(TypesOfMaterials));
-            
-            switch (Material.ToString())
-            {
-                case "HDPE":
-                     return material_coeff = 1;
-                case "PVC":
-                    return material_coeff = 2;
-                case "Corrugated_Metal_with_Tar_Lining":
-                    return material_coeff = 2;
-                case "Masonry":
-                    return material_coeff = 3;
-                case "Corrugated_Iron":
-                    return material_coeff = 3;
-                case "Cast_Iron":
-                    return material_coeff = 3;
-                case "Concrete":
-                    return material_coeff = 3;
-                default:
-                    break;
-            }
-
-            //pipe_age_coeff is got by dividing age by the estimated life.
-            pipe_age = (DateTime.Today).Year - InstallationDate.Year;
-            if (pipe_age/est_life <=0.2)
-            {
-                pipe_age_coeff = 1;
-            }
-            else
-            {
-                if (pipe_age / est_life > 0.2 && pipe_age / est_life <= 0.5)
-                {
-                    pipe_age_coeff = 3;
-                }
-                else
-                {
-                    if (pipe_age / est_life > 0.5 && pipe_age / est_life <= 0.8)
-                    {
-                        pipe_age_coeff = 4;
-                    }
-
-                    else
-                    {
-                        if (pipe_age / est_life > 0.8)
-                        {
-                            pipe_age_coeff = 5;
-                        }
-                        else
-                        {
-                            pipe_age_coeff = 0;
-                        }
-                    }
-                }
-
-            }
           
 
-            // checking the Depth to find the depth coefficient 
-            if (Depth > 0 && Depth < 8)
-            {
-                depth_coeff = 1;
-            }
-            else
-            {
-                if (Depth >= 8 && Depth < 12)
-                {
-                    depth_coeff = 1.5M;
-                }
-                else
-                {
-                    if (Depth >= 12 && Depth < 16)
-                    {
-                        depth_coeff = 2.0M;
-                    }
-                    else
-                    {
-                        if (Depth >= 16 && Depth < 20)
-                        {
-                            depth_coeff = 2.5M;
-                        }
-
-                    }
-
-                }
-            }
-
-
-            POFValue = material_coeff + pipe_age_value + soil_type_value+ depth_coeff;
-            return POFValue;
-        }
         #endregion
 
         
