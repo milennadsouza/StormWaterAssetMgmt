@@ -35,64 +35,128 @@ namespace Stormwater_Analysis
                         Console.WriteLine("New Pipe Information: ");
                         Console.WriteLine("-----------******------------");
                         Console.WriteLine("Type of Pipe:");
-
+                        var temppipetypeselected = TypesOfPipes.Culvert; //default is set
                         var pipetypes = Enum.GetNames(typeof(TypesOfPipes));//pipetypes is now an array of the values in TypesOfPipes enum.
                         for (int i = 0; i < pipetypes.Length; i++)
                         {
                             Console.WriteLine($"{i + 1} for {pipetypes[i]}");
                         }
-                        var pipetypeselection = Convert.ToInt32(Console.ReadLine());
-                        var temppipetypeselected = Enum.Parse<TypesOfPipes>(pipetypes[pipetypeselection - 1]);//because array is 0 based index- we can subtract 1 from what user has chosen
-                                                                                                              // get all other field data from user
-                        Console.Write("Starting Manhole ID: ");
-                        var tempmanholeID = Convert.ToInt32(Console.ReadLine());
-                        Console.Write("Pipe Length: ");
-                        var temppipeLength = Convert.ToInt32(Console.ReadLine());
-                        Console.Write("Pipe Depth: ");
-                        var tempdepth = Convert.ToInt32(Console.ReadLine());
-                        Console.WriteLine("Type of Pipe Material :");
-                        // get the enums converted to a list in an array and display.
-                        var pipematerials = Enum.GetNames(typeof(TypesOfMaterials));
-                        for (int i = 0; i < pipematerials.Length; i++)
+                        //exception handling
+                        try
                         {
-                            Console.WriteLine($"{i + 1} for {pipematerials[i]} :");
+                           var pipetypeselection = Convert.ToInt32(Console.ReadLine());
+                            temppipetypeselected = Enum.Parse<TypesOfPipes>(pipetypes[pipetypeselection - 1]);//because array is 0 based index- we can subtract 1 from what user has chosen
                         }
-                        var selectedpipematerial = Convert.ToInt32(Console.ReadLine());
-                        var temppipematerialselected = Enum.Parse<TypesOfMaterials>(pipematerials[selectedpipematerial - 1]);
-                        Console.Write(" Slope : ");
-                        var tempslope = Convert.ToInt32(Console.ReadLine());
-                        Console.Write("Critical Infrastructure : 1 for Yes 2 for No : ");
-                        var seltempcriticinfra = Convert.ToInt32(Console.ReadLine());
-                        var tempcritinfra = true;
-                        if (seltempcriticinfra == 1)
+                        catch (IndexOutOfRangeException e)
                         {
-                            tempcritinfra = true;
+                        Console.WriteLine($"{e.Message} : Please enter a valid number from 1 to {pipetypes.Length}");
+                            // if no break, control then passes to "starting manhole id" basically control flow goes to the next line after all catch blocks have executed.
+                            break;
                         }
-                        else
+                        catch (FormatException e)
                         {
-                            tempcritinfra = false;
+                            Console.WriteLine($"{e.Message} : Please enter a valid number from 1 to {pipetypes.Length}");
+                            break; //break causes control after exception to get out of the switch...case block, back to main menu screen.
+                        }
+                        catch(OverflowException e)
+                        {
+                            Console.WriteLine($"{e.Message} : Please enter a valid number from 1 to {pipetypes.Length}");
+                            break; //break like above, prevents control of program from completely ending. Just gets control out of the switch case loop.
                         }
 
-                        // Get the Critical Structure
-                        Console.Write("Critical Structure : 1 for Yes 2 for No : ");
-                        var boolstruc = Convert.ToInt32(Console.ReadLine());
-                        var tempboolstruc = true;
-                        if (boolstruc == 1)
+                        //All exceptions from other inputs are going to be try{} together and catch{} together at the end of section.
+                        // get all other field data from user
+                        try
                         {
-                            tempboolstruc = true;
+
+                            Console.Write("Starting Manhole ID: ");
+                            var tempmanholeID = Convert.ToInt32(Console.ReadLine());
+                            // application exception to make sure a value is entered.
+                            if (tempmanholeID < 0)
+                            {
+                                throw new ArgumentNullException(nameof(Pipe.Start_Manhole_ID));
+                            }
+                            Console.Write("Pipe Length: ");
+                            var temppipeLength = Convert.ToInt32(Console.ReadLine());
+                            Console.Write("Pipe Depth: ");
+                            var tempdepth = Convert.ToInt32(Console.ReadLine());
+                            Console.WriteLine("Type of Pipe Material :");
+                            // get the enums converted to a list in an array and display.
+                            var pipematerials = Enum.GetNames(typeof(TypesOfMaterials));
+                            for (int i = 0; i < pipematerials.Length; i++)
+                            {
+                                Console.WriteLine($"{i + 1} for {pipematerials[i]} :");
+                            }
+                            var selectedpipematerial = Convert.ToInt32(Console.ReadLine());
+                            if ((selectedpipematerial > pipematerials.Length) | (selectedpipematerial < 0))
+                                    {
+                               var materexcept = new MaterialRangeException();
+                                materexcept.paraminfo = nameof(Pipe.Material);//not hardcoding the name of the parameter that is affected.
+                                throw materexcept;
+                                    }
+                            var temppipematerialselected = Enum.Parse<TypesOfMaterials>(pipematerials[selectedpipematerial - 1]);
+                            Console.Write(" Slope : ");
+                            var tempslope = Convert.ToInt32(Console.ReadLine());
+                            Console.Write("Critical Infrastructure : 1 for Yes 2 for No : ");
+                            var seltempcriticinfra = Convert.ToInt32(Console.ReadLine());
+                            var tempcritinfra = true;
+                            if (seltempcriticinfra == 1)
+                            {
+                                tempcritinfra = true;
+                            }
+                            else
+                            {
+                                tempcritinfra = false;
+                            }
+
+                            // Get the Critical Structure
+                            Console.Write("Critical Structure : 1 for Yes 2 for No : ");
+                            var boolstruc = Convert.ToInt32(Console.ReadLine());
+                            var tempboolstruc = true;
+                            if (boolstruc == 1)
+                            {
+                                tempboolstruc = true;
+                            }
+                            else
+                            {
+                                tempboolstruc = false;
+                            }
+                            // get the id of the Maintenance Records
+                            Console.Write(" Maintenance Records ID: ");
+                            var tempmaintid = Convert.ToInt32(Console.ReadLine());
+
+                            AssetManagement.CreatePipe(temppipetypeselected, tempmanholeID, temppipeLength, tempdepth, temppipematerialselected, tempslope, tempcritinfra, tempboolstruc, tempmaintid);
+
+                            Console.WriteLine("Pipe Information Entered successfully !");
+                            break;
                         }
-                        else
+                        //all catch clauses
+                        catch(ArgumentNullException e)
                         {
-                            tempboolstruc = false;
+                            Console.WriteLine($"Value for {e.ParamName} needs to be given");
+                            break;
                         }
-                        // get the id of the Maintenance Records
-                        Console.Write(" Maintenance Records ID: ");
-                        var tempmaintid = Convert.ToInt32(Console.ReadLine());
-
-                        AssetManagement.CreatePipe(temppipetypeselected, tempmanholeID, temppipeLength, tempdepth, temppipematerialselected, tempslope, tempcritinfra, tempboolstruc, tempmaintid);
-
-                        Console.WriteLine("Pipe Information Entered successfully !");
-                        break;
+                        catch(FormatException e)
+                        {
+                            Console.WriteLine($"Data entered incorrectly : {e.Message}");
+                            break;
+                        }
+                        catch(OverflowException e)
+                        {
+                            Console.WriteLine($"{e.Message} :Please input valid integers and decimals only");
+                            break;
+                        }
+                        catch(MaterialRangeException e)
+                        {
+                            Console.WriteLine($"{e.Message}, {e.paraminfo}");
+                            break;
+                        }
+                        catch(IndexOutOfRangeException e)
+                        {
+                            Console.WriteLine($"{e.Message} : Please enter a valid number within the range");
+                            
+                            break;
+                        }
 
                     case 3: //Get a report for POF of a certain Pipe
                         {
