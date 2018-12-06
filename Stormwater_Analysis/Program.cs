@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Stormwater_Analysis
@@ -21,8 +22,8 @@ namespace Stormwater_Analysis
                 Console.WriteLine("2 to Enter New Manhole Information");
                 Console.WriteLine("3 to Get a report on POF for particular Pipe ");
                 Console.WriteLine("4 to Search for an Asset in a particular slope range ");
-                Console.WriteLine("5 to Search for Assets based on age");
-                Console.WriteLine("6 to Search for Assets near Critical Infrastructures");
+                Console.WriteLine("5 to Search for Assets based on Estimated Life");
+                Console.WriteLine("6 to Search for Pipes of a particular material type");
 
                 Console.Write("Enter your choice: ");
                 var choice = Convert.ToInt32(Console.ReadLine());
@@ -158,6 +159,36 @@ namespace Stormwater_Analysis
                             break;
                         }
 
+                    // Enter the Manhole Information 
+                    case 2:
+                        {
+                            try
+                            {
+                                Console.WriteLine("New Manhole Information: ");
+                                Console.WriteLine("-----------******------------");
+                                Console.WriteLine("Existing Pipe ID this manhole is related to: ");
+                                var pipeID = Convert.ToInt32(Console.ReadLine());//default is set
+                                Console.WriteLine("Date of Installation MM/DD/YYYY: ");
+                                var installdt = Convert.ToDateTime(Console.ReadLine());
+                                Console.WriteLine("Managed By :");
+                                var managedby = Console.ReadLine();
+                                Console.WriteLine("Drainage Area : ");
+                                var drainagearea = Convert.ToDecimal(Console.ReadLine());
+
+                                AssetManagement.CreateManhole(pipeID, installdt, managedby, drainagearea);
+                                Console.WriteLine("Manhole Information entered correctly");
+                            }
+                            //exception handling
+                            catch (ManholePipeException e)
+                            {
+                                Console.WriteLine(e.Message);
+                            }
+
+
+                            break;
+                        }
+    
+
                     case 3: //Get a report for POF of a certain Pipe
                         {
                             //Get all the Pipes. Ask User to enter Pipe ID
@@ -170,22 +201,91 @@ namespace Stormwater_Analysis
                             }
                             Console.WriteLine("Please enter Pipe ID");
                             var pipeID = Convert.ToInt32(Console.ReadLine());
-                             var reqdPipe = PipeColl.FirstOrDefault(a=>a.Pipe_ID == pipeID);
+                             Pipe reqdPipe = PipeColl.FirstOrDefault(a=>a.Pipe_ID == pipeID);
                             
                             //AssetManagement is a static class. Instance cannot be created. So object reference is not passed in.
                             //Hence we have to pass all the details in to calculate the POF
                             var POF = AssetManagement.CalculatePOF(reqdPipe.DateOfInstallation, reqdPipe.Material, reqdPipe.Depth, reqdPipe.Est_Life);
                             Console.WriteLine($"The POF for Pipe ID: {reqdPipe.Pipe_ID}  is : {POF}");
+                            
                             break;
                         }
 
+                    case 4:// to search for an asset based on a given slope range
+                        {
+                            Console.WriteLine("enter the minimum slope : ");
+                            var minSlope = Convert.ToInt32(Console.ReadLine());
+                            Console.WriteLine("enter the upper slope range : ");
+                            var maxSlope = Convert.ToInt32(Console.ReadLine());
+                            IEnumerable<Pipe> reqdPipe = AssetManagement.PipeBasedOnSlope(minSlope, maxSlope);
+                            DisplayPipes(reqdPipe);
+                            break;
+                        }
+
+                    case 5: //to Search for Assets based on Estimated Life
+                        {
+                            Console.WriteLine("Enter Estimated Life range to search by: ");
+                            Console.WriteLine("Enter lower estimated life range value: ");
+                            try
+                            {
+                                var agerangelower = Convert.ToInt16(Console.ReadLine());
+                                Console.WriteLine("Enter upper range value: ");
+                                var agerangeupper = Convert.ToInt16(Console.ReadLine());
+                                IEnumerable<Pipe> p = AssetManagement.PipesByEstLife(agerangelower, agerangeupper);
+                                DisplayPipes(p);
+                            }
+                            catch (FormatException e)
+                            {
+                                Console.WriteLine(e.Message);
+                                break; //breaks out of this Case statement and goes back to the main menu before Case statements
+                            }
+                            catch (OverflowException e)
+                            {
+                                Console.WriteLine(e.Message);
+                                break;
+                            }
+                            catch (ArgumentOutOfRangeException e)
+                            {
+                                Console.WriteLine(e.Message);
+                                break;
+                            }
+
+                            break;
+                        }
+
+                    case 6: //List all Pipes of a particular type of Material
+                        {
+                            Console.WriteLine("Search for Pipes of a particular material");
+                            // Get the enum of TypesofMAterials and display
+                            var materialList = Enum.GetNames(typeof(TypesOfMaterials));
+                            for (int i = 0; i < materialList.Length; i++)
+                            {
+                                Console.WriteLine($"{i + 1} : {materialList[i]}"); //Writing out the enum list of TypesOfMaterials, for user to choose
+                            }
+                                var selectedType = Convert.ToInt16(Console.ReadLine());
+                                //Now get the actual enum value selected
+                                var tempselectedType = Enum.Parse<TypesOfMaterials>(materialList[selectedType - 1]); // the selected index back into an Enum type
+                                IEnumerable<Pipe> resultList = AssetManagement.PipesByMaterial(tempselectedType);
+                            DisplayPipes(resultList);       
+                                
+
+                            break;
+                        }
                 };
 
             }
         }
-
+        private static void DisplayPipes(System.Collections.Generic.IEnumerable<Pipe> reqdPipe)
+        {
+            foreach (Pipe p in reqdPipe)
+            {//write out some of the data
+                Console.WriteLine($"Pipe Details: PipeID: {p.Pipe_ID} \nLength of Pipe: {p.Pipe_Length} " +
+                    $"\n Type of Pipe: {p.Pipe_Type} \n Slope: {p.Slope} \n Date of Install : {p.DateOfInstallation} " +
+                    $"\n Type of Material: {p.Material} \n Estimated Life of Pipe: {p.Est_Life}");
+            }
+        }
     }
-    
-        
+
+
 } 
 

@@ -50,20 +50,20 @@ namespace Stormwater_Analysis
         {
             var plife = 0;
 
-            switch (mater.ToString())
+            switch (mater)
             {
-                case "HDPE":
-                case "PVC":
-                case "Corrugated_Metal_with_Tar_Lining":
+                case TypesOfMaterials.Corrugated_Iron_with_Tar_Lining:
+                case TypesOfMaterials.Iron:
+                case TypesOfMaterials.Masonry:
                     plife = 75;
                     break;
-                case "Cast_Iron":
-                case "Concrete":
+                case TypesOfMaterials.Cast_Iron:
+                case TypesOfMaterials.Concrete:
                     plife = 60;
                     break;
 
-                case "Masonry":
-                case "Corrugated_Iron":
+                case TypesOfMaterials.HDPE:
+                case TypesOfMaterials.Corrugated_Iron:
                     plife = 50;
                     break;
 
@@ -99,21 +99,21 @@ namespace Stormwater_Analysis
             int pipe_age_coeff = 0;
             // Array material_arr = Enum.GetNames(typeof(TypesOfMaterials));
 
-            switch (Material.ToString())
+            switch (Material)
             {
-                case "HDPE":
+                case TypesOfMaterials.HDPE:
                     return material_coeff = 1;
-                case "PVC":
+                case TypesOfMaterials.PVC:
                     return material_coeff = 2;
-                case "Corrugated_Metal_with_Tar_Lining":
+                case TypesOfMaterials.Corrugated_Iron_with_Tar_Lining:
                     return material_coeff = 2;
-                case "Masonry":
+                case TypesOfMaterials.Masonry:
                     return material_coeff = 3;
-                case "Corrugated_Iron":
+                case TypesOfMaterials.Corrugated_Iron:
                     return material_coeff = 3;
-                case "Cast_Iron":
+                case TypesOfMaterials.Cast_Iron:
                     return material_coeff = 3;
-                case "Concrete":
+                case TypesOfMaterials.Concrete:
                     return material_coeff = 3;
                 default:
                     break;
@@ -194,7 +194,76 @@ namespace Stormwater_Analysis
             return pipeCollection;
         }
         #endregion
+        
+        // Create a new Manhole method
+        private static List<Manhole> manholeColl = new List<Manhole>();
 
+        public static void CreateManhole(int pipeid, DateTime installdt, string managedby, decimal drainagearea)
+        {
+            //Do some user input checks here -
+            var pipeinfo = pipeCollection.Exists(p => p.Pipe_ID == pipeid);
+            if (!pipeinfo) //checks if there is a matching record in Pipe
+                {
+                var pipeException = new ManholePipeException();
+                throw pipeException;
+            }
+            //create a new object of type Manhole
+            var newmanhole = new Manhole
+            {
+                PipeID = pipeid,
+                InstallationDt = installdt,
+                ManagedBy = managedby,
+                DrainageArea = drainagearea
+            };
+            manholeColl.Add(newmanhole);
+            //add it to the collection
+        }
 
+        /// <summary>
+        /// Obtains IEnumerable list of Pipes that match the slope range given
+        /// </summary>
+        /// <param name="minSlope"></param>
+        /// <param name="maxSlope"></param>
+        /// <returns></returns>
+        public static IEnumerable<Pipe> PipeBasedOnSlope(int minSlope, int maxSlope)
+        {
+            List<Pipe> matchPipes = new List<Pipe>();
+
+        foreach(var pipeColl in pipeCollection)
+            {
+                if(pipeColl.Slope > minSlope && pipeColl.Slope < maxSlope) // || - Or, && - And, ! - Not
+                {
+                    matchPipes.Add(pipeColl);
+                }
+
+            }
+            return matchPipes;
+        }
+        public static IEnumerable<Pipe> PipesByEstLife(int minrange, int maxrange)
+        {
+            List<Pipe> matchingPipes = new List<Pipe>();
+            foreach(var p in pipeCollection)
+            {
+                if (p.Est_Life >= minrange && p.Est_Life <= maxrange)
+                {
+                    matchingPipes.Add(p);
+                }
+            }
+            return matchingPipes ;
+        }
+
+        public static IEnumerable<Pipe> PipesByMaterial(TypesOfMaterials selectedMaterial)
+        {
+            List<Pipe> matchingPipes = new List<Pipe>(); //will store the newly found list of pipes that match the incoming criteria
+            foreach(var p in pipeCollection)
+            {
+                if(p.Material == (selectedMaterial))
+                    {
+                    matchingPipes.Add(p);
+                }
+                
+            }
+            return matchingPipes;
+        }
     }
 }
