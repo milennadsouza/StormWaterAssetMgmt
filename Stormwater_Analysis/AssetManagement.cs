@@ -7,6 +7,7 @@ namespace Stormwater_Analysis
 {
     /// <summary>
     /// Static class to handle entry of data and analysis, reports of assets. Defined as default Internal-only visible within this assembly.
+    /// Factory Class
     /// </summary>
     static class AssetManagement //a class that is static, will not have any properties,
         // will only have methods to handle all the data gathering and analysis for Pipe and Manhole classes
